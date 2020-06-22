@@ -22,7 +22,8 @@ async function main(): Promise<void> {
   const exporter = new KringExporter({ token: process.env.TOKEN as string });
   const { data } = await exporter.exportProjectUnderDataTransformations({ projectReference });
 
-  const writeResult = await (new FileWriter({ directoryRoot: "/.output" })).writeAllResourcesToFiles({ data });
+  const writeResult = await (new FileWriter({ directoryRoot: "./output" })).writeAllResourcesToFiles({ data });
+
   if (writeResult.kind !== Kind.OK) {
     console.error(writeResult.value);
   }
