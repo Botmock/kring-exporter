@@ -18,6 +18,7 @@ async function main(): Promise<void> {
     projectId: process.env.PROJECT_ID as string,
     boardId: process.env.BOARD_ID,
   };
+
   const exporter = new KringExporter({ token: process.env.TOKEN as string });
   const { data } = await exporter.exportProjectUnderDataTransformations({ projectReference });
 

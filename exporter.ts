@@ -5,12 +5,13 @@ import {
 } from "@botmock/export";
 
 export class KringExporter extends BaseExporter {
+  #mapResourcesToLgContents = (resources: Resources) => { };
   #rootTransformation = (resources: Resources): DataTransformation => {
     return [
       {
         filename: `${resources.project.name}.lg`,
-        data: {},
-      }
+        data: this.#mapResourcesToLgContents(resources),
+      },
     ];
   };
   /**
