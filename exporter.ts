@@ -5,6 +5,7 @@ import {
   Botmock,
 } from "@botmock/export";
 import { v4 } from "uuid";
+import { platform } from "os";
 
 namespace MSBotFramework {
   export enum BodyTypes {
@@ -24,7 +25,7 @@ export class KringExporter extends BaseExporter {
     [Botmock.Component.button, MSBotFramework.BodyTypes.CHOICE],
     [Botmock.Component.quick_replies, MSBotFramework.BodyTypes.CHOICE],
   ]);
-  #createSchemaForContentBlock = (block: Botmock.Block): MSBotFramework.SchemaContent => {
+  #createSchemaForContent = (block: Botmock.Block): MSBotFramework.SchemaContent => {
     return {
       $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
       type: "AdaptiveCard",
@@ -64,7 +65,11 @@ export class KringExporter extends BaseExporter {
         const schemaContent: MSBotFramework.SchemaContent[] = valuesByPlatform
           .flatMap(value => Object.values(value).flatMap(b => b.blocks))
           .filter(block => this.#schemaMap.has(block.component_type))
-          .map(this.#createSchemaForContentBlock);
+          .map(this.#createSchemaForContent);
+
+        if (!schemaContent.length) {
+          return payloads;
+        }
         return {
           ...payloads,
           [message.message_id]: schemaContent,
