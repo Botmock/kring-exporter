@@ -6,17 +6,27 @@ import {
 } from "@botmock/export";
 
 namespace MSBotFramework {
-  export interface SchemaContent { }
+  export interface SchemaContent<B = {}> {
+    $schema: string;
+    type: string;
+    version: string;
+    body: B[],
+  }
 }
 
 export class KringExporter extends BaseExporter {
   #schemaMap: Map<string, string> = new Map([
-    ["card", ""],
-    ["button", ""],
-    ["quick_replies", ""],
+    ["button", "Input.ChoiceSet"],
+    ["quick_replies", "Input.ChoiceSet"],
   ]);
   #createSchemaForContentBlock = (block: Botmock.Block): MSBotFramework.SchemaContent => {
-    return {};
+    const body: any[] = [];
+    return {
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      type: "AdaptiveCard",
+      version: "1.0",
+      body,
+    };
   };
   #createTemplatesFromProjectResources = (resources: Resources) => {
     return {};
