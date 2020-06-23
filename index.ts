@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   const projectReference: ProjectReference = {
     teamId: process.env.TEAM_ID as string,
     projectId: process.env.PROJECT_ID as string,
-    boardId: process.env.BOARD_ID,
+    boardId: process.env.BOARD_ID as string,
   };
 
   const exporter = new KringExporter({ token: process.env.TOKEN as string });
@@ -26,6 +26,8 @@ async function main(): Promise<void> {
 
   if (writeResult.kind !== Kind.OK) {
     console.error(writeResult.value);
+  } else {
+    console.log("done");
   }
 }
 
