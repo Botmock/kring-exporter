@@ -4,8 +4,13 @@ import {
   DataTransformation,
   Botmock,
 } from "@botmock/export";
+import { v4 } from "uuid";
 
 namespace MSBotFramework {
+  export enum BodyTypes {
+    TEXT = "TextBlock",
+    CHOICE = "Input.ChoiceSet",
+  }
   export interface SchemaContent<B = {}> {
     $schema: string;
     type: string;
@@ -16,16 +21,33 @@ namespace MSBotFramework {
 
 export class KringExporter extends BaseExporter {
   #schemaMap: Map<string, string> = new Map([
-    ["button", "Input.ChoiceSet"],
-    ["quick_replies", "Input.ChoiceSet"],
+    [Botmock.Component.button, MSBotFramework.BodyTypes.CHOICE],
+    [Botmock.Component.quick_replies, MSBotFramework.BodyTypes.CHOICE],
   ]);
   #createSchemaForContentBlock = (block: Botmock.Block): MSBotFramework.SchemaContent => {
-    const body: any[] = [];
     return {
       $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
       type: "AdaptiveCard",
       version: "1.0",
-      body,
+      body: [
+        {
+          type: MSBotFramework.BodyTypes.TEXT,
+          text: block.text || "",
+        },
+        {
+          type: MSBotFramework.BodyTypes.CHOICE,
+          id: v4(),
+          style: "compact",
+          isMultiSelect: false,
+          value: "",
+          choices: (block.buttons || block.quick_replies as any[]).map(value => {
+            return {
+              title: value.title,
+              value: value.title,
+            };
+          })
+        }
+      ],
     };
   };
   #createTemplatesFromProjectResources = (resources: Resources) => {
