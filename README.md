@@ -12,6 +12,7 @@ The following steps will run the script.
 - `cd kring-exporter`
 - `npm install`
 - edit`.sample.env` to contain [your token, team id, project id, and board id](http://help.botmock.com/en/articles/2334581-developer-api).
+- rename `.sample.env` to `.env`
 - `npm start`
 
 ## The `.lg` file format
