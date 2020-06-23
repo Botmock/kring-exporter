@@ -9,7 +9,7 @@ export class KringExporter extends BaseExporter {
    * Maps resources to object suitable for writing `.lg` file.
    * @param resources Object containing resources from Botmock project in `.env` file.
    */
-  #mapResourcesToLgContents = (resources: Resources) => {
+  #createTemplatesFromProjectResources = (resources: Resources) => {
     return {};
   };
   /**
@@ -20,7 +20,7 @@ export class KringExporter extends BaseExporter {
     return [
       {
         filename: `${resources.project.name}.lg`,
-        data: this.#mapResourcesToLgContents(resources),
+        data: this.#createTemplatesFromProjectResources(resources),
       },
     ];
   };
