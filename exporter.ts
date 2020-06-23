@@ -2,20 +2,14 @@ import {
   BaseExporter,
   Resources,
   DataTransformation,
+  Botmock,
 } from "@botmock/export";
 
 export class KringExporter extends BaseExporter {
-  /**
-   * Maps resources to object suitable for writing `.lg` file.
-   * @param resources Object containing resources from Botmock project in `.env` file.
-   */
+  #createSchemaForContentBlock = (block: Botmock.Block) => { };
   #createTemplatesFromProjectResources = (resources: Resources) => {
     return {};
   };
-  /**
-   * Associates filenames with object representations of their desired contents.
-   * @param resources Object containing resources from Botmock projet in `.env` file.
-   */
   #rootTransformation = (resources: Resources): DataTransformation => {
     return [
       {
@@ -25,10 +19,7 @@ export class KringExporter extends BaseExporter {
     ];
   };
   /**
-   * Defines data transformations for the exporter.
-   *
-   * For more on data transformations,
-   * see the {@link https://github.com/Botmock/sdk/tree/master/packages/export#custom-exporters-example docs}.
+   * Defines {@link https://github.com/Botmock/sdk/tree/master/packages/export#custom-exporters-example data transformations} for the exporter.
    */
   dataTransformations = new Map([
     ["./language-generation", this.#rootTransformation],
