@@ -8,7 +8,7 @@ import { v4 } from "uuid";
 import { MSBotFramework } from "./types";
 
 export class KringExporter extends BaseExporter {
-  #templateMap: Map<string, string> = new Map();
+  #adaptiveCardJSONMap: Map<string, string> = new Map([]);
   #schemaMap: Map<string, string> = new Map([
     [Botmock.Component.button, MSBotFramework.BodyTypes.CHOICE],
     [Botmock.Component.quick_replies, MSBotFramework.BodyTypes.CHOICE],
@@ -57,22 +57,45 @@ export class KringExporter extends BaseExporter {
     return processedInput.join("");
   };
   #createTemplatesFromProjectResourcesAndSchemaAssociations = (resources: Resources, schemaAssociations: {}) => {
-    return (resources.board.board.messages as Botmock.Message[]).reduce((obj, message) => {
-      return {
-        ...obj,
-        [message.message_id]: Object.values(message.payload)
-          .flatMap(value =>
-            Object.values(value).flatMap(v =>
-              v.blocks.map(block => [block.text, ...block.alternate_replies || []]
-                .filter(input => typeof input === "string")
-                .map(input => this.#replaceEntityCharacters(input as string)))
-            )
+    const unwrapValuesFromPayload = (payload: Botmock.Message["payload"]) => {
+      return Object.values(payload)
+        .flatMap(value =>
+          Object.values(value).flatMap(v =>
+            v.blocks.map(block => [block.text, ...block.alternate_replies || []]
+              .filter(input => typeof input === "string")
+              .map(input => this.#replaceEntityCharacters(input as string)))
           )
+        );
+    };
+    return (resources.board.board.messages as Botmock.Message[]).reduce((obj, message) => {
+      const result = {
+        ...obj,
+        [message.message_id]: unwrapValuesFromPayload(message.payload)
       };
+      if (message.next_message_ids.some(n => n.action !== "*" as any)) {
+        (result as any)[`${message.message_id}_outcomes`] = {
+          conditions: message.next_message_ids
+            .filter(n => n.action !== "*" as any)
+            .map(n => {
+              let pair: [string, string] = [`\${userInput == ${ n.action.payload }}`, ``];
+              const nextMessage = (resources.board.board.messages as Botmock.Message[]).find(message => message.message_id === n.message_id);
+
+              if (this.#schemaMap.get((nextMessage as any).message_type)) {
+                pair[1] = `\${${this.#adaptiveCardJSONMap.get((nextMessage as Botmock.Message).message_id)}}()`;
+              } else {
+                pair[1] = unwrapValuesFromPayload((nextMessage as Botmock.Message).payload).join(", ");
+              }
+              return pair;
+            })
+        };
+      }
+      return result;
     }, Object.keys(schemaAssociations).reduce((associations, messageId, i) => {
+      const key = `adaptivecardjson_${i + 1}`;
+      this.#adaptiveCardJSONMap.set(messageId, key);
       return {
         ...associations,
-        [`adaptivecardjson_${i + 1}`]: [`\${json(fromFile("${messageId}.json"))}`],
+        [key]: [`\${json(fromFile("./${messageId}.json"))}`],
       };
     }, {}));
   };
