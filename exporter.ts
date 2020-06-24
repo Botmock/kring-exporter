@@ -39,12 +39,35 @@ export class KringExporter extends BaseExporter {
       ],
     };
   };
+  #replaceEntityCharacters = (input: string): string => {
+    const processedInput = input.split("");
+    let numCaptured = 0;
+    let i = 0;
+    for (const char of processedInput) {
+      if (char === "%") {
+        if (numCaptured % 2 === 0) {
+          processedInput[i] = "${";
+        } else {
+          processedInput[i] = "}";
+        }
+        numCaptured += 1;
+      }
+      i += 1;
+    }
+    return processedInput.join("");
+  };
   #createTemplatesFromProjectResourcesAndSchemaAssociations = (resources: Resources, schemaAssociations: {}) => {
     return (resources.board.board.messages as Botmock.Message[]).reduce((obj, message) => {
       return {
         ...obj,
         [message.message_id]: Object.values(message.payload)
-          .flatMap(value => Object.values(value).flatMap(v => v.blocks.map(b => [b.text, ...b.alternate_replies || []])))
+          .flatMap(value =>
+            Object.values(value).flatMap(v =>
+              v.blocks.map(block => [block.text, ...block.alternate_replies || []]
+                .filter(input => typeof input === "string")
+                .map(input => this.#replaceEntityCharacters(input as string)))
+            )
+          )
       };
     }, Object.keys(schemaAssociations).reduce((associations, messageId, i) => {
       return {
