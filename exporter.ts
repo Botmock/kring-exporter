@@ -61,7 +61,7 @@ export class KringExporter extends BaseExporter {
           ...payloads,
           [message.message_id]: schemaContent,
         };
-      }, {});
+      }, {}) as { [messageId:string]: MSBotFramework.SchemaContent };
     return [
       {
         filename: `${resources.project.name}.lg`,
@@ -69,7 +69,6 @@ export class KringExporter extends BaseExporter {
       },
       ...Object.keys(payloadsContainingSchemaContent).map(key => ({
         filename: `${key}.json`,
-        // @ts-ignore
         data: payloadsContainingSchemaContent[key],
       })),
     ];
