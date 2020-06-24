@@ -77,7 +77,7 @@ export class KringExporter extends BaseExporter {
           conditions: message.next_message_ids
             .filter(n => n.action !== "*" as any)
             .map(n => {
-              let pair: [string, string] = [`\${userInput == ${ n.action.payload }}`, ``];
+              let pair: [string, string] = [`\${userInput == ${n.action.payload}}`, ``];
               const nextMessage = (resources.board.board.messages as Botmock.Message[]).find(message => message.message_id === n.message_id);
 
               if (this.#schemaMap.get((nextMessage as any).message_type)) {
