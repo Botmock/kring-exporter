@@ -39,19 +39,25 @@ export class KringExporter extends BaseExporter {
       ],
     };
   };
-  #createTemplatesFromProjectResourcesAndSchemaContent = (resources: Resources, schemaContent: {}) => {
+  #createTemplatesFromProjectResourcesAndSchemaAssociations = (resources: Resources, schemaAssociations: {}) => {
     return (resources.board.board.messages as Botmock.Message[]).reduce((obj, message) => {
       return {
         ...obj,
-        [message.message_id]: ["x"]
+        [message.message_id]: Object.values(message.payload)
+          .flatMap(value => Object.values(value).flatMap(v => v.blocks.map(b => [b.text, ...b.alternate_replies || []])))
       };
-    }, {});
+    }, Object.keys(schemaAssociations).reduce((associations, messageId, i) => {
+      return {
+        ...associations,
+        [`adaptivecardjson_${i + 1}`]: [`\${json(fromFile("${messageId}.json"))}`],
+      };
+    }, {}));
   };
-  #generateSchemaContent = (messages: Botmock.Message[]) => {
+  #generateSchemaAssociations = (messages: Botmock.Message[]) => {
     return messages.reduce((payloads, message) => {
       const valuesByPlatform = Object.values(message.payload);
       const schemaContent: MSBotFramework.SchemaContent[] = valuesByPlatform
-        .flatMap(value => Object.values(value).flatMap(b => b.blocks))
+        .flatMap(value => Object.values(value).flatMap(v => v.blocks))
         .filter(block => this.#schemaMap.has(block.component_type))
         .map(this.#createSchemaForContent);
       if (!schemaContent.length) {
@@ -68,11 +74,11 @@ export class KringExporter extends BaseExporter {
    * @param resources Object containing botmock resources.
    */
   #rootTransformation = (resources: Resources): DataTransformation => {
-    const payloadsContainingSchemaContent = this.#generateSchemaContent(resources.board.board.messages);
+    const payloadsContainingSchemaContent = this.#generateSchemaAssociations(resources.board.board.messages);
     return [
       {
         filename: `${resources.project.name}.lg`,
-        data: this.#createTemplatesFromProjectResourcesAndSchemaContent(resources, payloadsContainingSchemaContent),
+        data: this.#createTemplatesFromProjectResourcesAndSchemaAssociations(resources, payloadsContainingSchemaContent),
       },
       ...Object.keys(payloadsContainingSchemaContent).map(messageId => ({
         filename: `${messageId}.json`,
