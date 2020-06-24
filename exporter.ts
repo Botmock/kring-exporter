@@ -5,20 +5,7 @@ import {
   Botmock,
 } from "@botmock/export";
 import { v4 } from "uuid";
-import { platform } from "os";
-
-namespace MSBotFramework {
-  export enum BodyTypes {
-    TEXT = "TextBlock",
-    CHOICE = "Input.ChoiceSet",
-  }
-  export interface SchemaContent<B = {}> {
-    $schema: string;
-    type: string;
-    version: string;
-    body: B[],
-  }
-}
+import { MSBotFramework } from "./types";
 
 export class KringExporter extends BaseExporter {
   #schemaMap: Map<string, string> = new Map([
